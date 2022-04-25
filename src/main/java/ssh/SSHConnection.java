@@ -77,6 +77,9 @@ public class SSHConnection {
         }
     }
 
+    /**
+     * Close currently connected SSH session and channel
+     */
     protected static void closeConnection() {
         channel.disconnect();
         session.disconnect();
