@@ -4,14 +4,16 @@ import com.jcraft.jsch.ChannelShell;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.function.IntToDoubleFunction;
 
 public class SSHExecution {
     private final ChannelShell channel;
     private InputStream inputStream;
     private OutputStream outputStream;
-    private static final System.Logger LOGGER = System.getLogger(SSHConnection.class.getName());
+    private static final System.Logger LOGGER = System.getLogger(SSHExecution.class.getName());
 
     /**
      * Constructor which takes ChannelShell as parameter.
@@ -21,13 +23,13 @@ public class SSHExecution {
      * @param channel Existing channel that connects SSH client to SSH server.
      */
     public SSHExecution(ChannelShell channel) {
-       this.channel = channel;
-       try {
-        this.inputStream = channel.getInputStream();
-        this.outputStream = channel.getOutputStream();
-       } catch(IOException e) {
-           LOGGER.log(System.Logger.Level.ERROR, e);
-       }
+        this.channel = channel;
+        try {
+            this.inputStream = channel.getInputStream();
+            this.outputStream = channel.getOutputStream();
+        } catch (IOException e) {
+            LOGGER.log(System.Logger.Level.ERROR, e);
+        }
     }
 
     /**
@@ -55,7 +57,7 @@ public class SSHExecution {
      * @return byte[], result of remote shell execution.
      */
     private byte[] readInputStream() {
-        byte[] byteBuffer = new byte[8192];
+        byte[] byteBuffer = new byte[2000];
         try {
             inputStream.read(byteBuffer, 0, byteBuffer.length);
         } catch (IOException e) {
@@ -72,11 +74,13 @@ public class SSHExecution {
      */
     public void run() {
         try {
-            Thread.sleep(100);
-            while (channel.isConnected() && inputStream.available() >= 0) {
+            Thread.sleep(50);
+            do {
                 byte[] byteOutput = readInputStream();
                 System.out.print(new String(byteOutput, StandardCharsets.UTF_8));
+                Thread.sleep(60);
             }
+            while (channel.isConnected() && inputStream.available() > 0);
         } catch (InterruptedException e) {
             LOGGER.log(System.Logger.Level.ERROR, e);
             Thread.currentThread().interrupt();
