@@ -2,9 +2,6 @@ package ssh;
 
 import com.jcraft.jsch.*;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-
 /**
  * Class that accept client's message (mostly the shell commands) via WebSocket
  * and returns the results of Secure Shell execution.
@@ -16,8 +13,8 @@ import java.nio.charset.StandardCharsets;
 
 public class SSHConnection {
     private final JSch ssh;
-    private static Session session;
-    private static ChannelShell channel;
+    private Session session;
+    private ChannelShell channel;
     private static final System.Logger LOGGER = System.getLogger(SSHConnection.class.getName());
 
     /**
@@ -54,11 +51,10 @@ public class SSHConnection {
     }
 
     protected ChannelShell getChannelShell() throws NullPointerException{
-            if (this.channel != null) {
-                return this.channel;
-            } else {
-                throw new NullPointerException("inputStream is null");
+            if (channel != null) {
+                return channel;
             }
+            throw new NullPointerException("inputStream is null");
     }
 
     /**
@@ -80,8 +76,9 @@ public class SSHConnection {
     /**
      * Close currently connected SSH session and channel
      */
-    protected static void closeConnection() {
+    protected void closeConnection() {
         channel.disconnect();
         session.disconnect();
+        LOGGER.log(System.Logger.Level.INFO, "Closing SSH connection");
     }
 }
