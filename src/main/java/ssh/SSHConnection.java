@@ -50,7 +50,7 @@ public class SSHConnection {
         }
     }
 
-    protected ChannelShell getChannelShell() throws NullPointerException{
+    public ChannelShell getChannelShell() throws NullPointerException{
             if (channel != null) {
                 return channel;
             }
@@ -76,7 +76,7 @@ public class SSHConnection {
     /**
      * Close currently connected SSH session and channel
      */
-    protected void closeConnection() {
+    public void closeConnection() {
         channel.disconnect();
         session.disconnect();
         LOGGER.log(System.Logger.Level.INFO, "Closing SSH connection");
