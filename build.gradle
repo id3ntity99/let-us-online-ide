@@ -8,6 +8,7 @@ jacoco {
 }
 
 jacocoTestReport {
+    dependsOn test
     reports {
         html.enabled true
     }
@@ -16,11 +17,11 @@ jacocoTestReport {
 jacocoTestCoverageVerification {
     violationRules {
         rule {
-            element = 'CLASS'
+            element = 'METHOD'
             limit {
-                counter = 'BRANCH'
+                counter = 'METHOD'
                 value = "COVEREDRATIO"
-                minimum = 0.90
+                minimum = 0.70
             }
         }
     }
@@ -35,12 +36,15 @@ repositories {
 
 dependencies {
     implementation 'com.jcraft:jsch:0.1.55'
+    testImplementation "org.mockito:mockito-core:3.+"
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
 
 test {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
+    testLogging.showStandardStreams = true
 }
 
 application {
