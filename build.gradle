@@ -1,5 +1,30 @@
 plugins {
+    id 'jacoco'
     id 'application'
+}
+
+jacoco {
+    toolVersion = '0.8.5'
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        html.enabled true
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = 'METHOD'
+            limit {
+                counter = 'BRANCH'
+                value = "COVEREDRATIO"
+                minimum = 0.70
+            }
+        }
+    }
 }
 
 group 'org.example'
@@ -11,12 +36,15 @@ repositories {
 
 dependencies {
     implementation 'com.jcraft:jsch:0.1.55'
+    testImplementation "org.mockito:mockito-core:4.5.1"
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
 
 test {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
+    testLogging.showStandardStreams = true
 }
 
 application {
