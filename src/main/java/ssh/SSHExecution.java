@@ -27,11 +27,13 @@ public class SSHExecution {
 
     /**
      * Execute remote shell command.
-     * This method takes Shell command as a parameter from the websocket.
+     * This method takes bytes as a parameter from the websocket.
      * The command received will then be pushed into channel's output stream.
      *
+     * If the argument size exceeds 2000 bytes, it throws an exception.
+     *
      * @param cmdBytes Shell command to execute remotely.
-     * @return cmdBytes Return passed arguments if it works properly.
+     * @return cmdBytes Returns number of bytes of cmdBytes.
      */
     public int executeRemoteShell(byte[] cmdBytes) throws IOException, InputTooLargeException {
         if (cmdBytes.length > 2000) {
@@ -45,9 +47,11 @@ public class SSHExecution {
 
     /**
      * Read the result of shell execution from the channel's input stream.
-     * The data from the input stream will then be stored in the byte array, whose size is 2000.
-     * After writing into the byte array, it will be returned as a result of method calling.
+     * The data from the input stream will then be stored in the byte array.
+     * After writing into the byte array, it will be returned as a result of method call.
+     * If the bytes that have been read is less than the size of buffer, it will be trimmed.
      *
+     * @param bufferToWrite, A buffer that is used to write data from the input stream.
      * @return byte[], result of remote shell execution.
      */
     private byte[] readInputStream(byte[] bufferToWrite) throws IOException {
@@ -66,6 +70,8 @@ public class SSHExecution {
      * Listen to the channel's input stream.
      * If the input stream has bytes to be read, this method will
      * read data from it until there are nothing to read from the input stream.
+     *
+     * Invoking this method when channel is disconnected or input stream is empty, it will throw errors.
      *
      * @return byte[], The last-read 2000(or less) bytes.
      */
