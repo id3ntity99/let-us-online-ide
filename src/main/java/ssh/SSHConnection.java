@@ -21,8 +21,11 @@ public class SSHConnection {
      * Constructor for ssh.SSHandler.
      * This constructor only creates single JSch instance.
      */
-    public SSHConnection() {
-        this.ssh = new JSch();
+    public SSHConnection(JSch ssh, String username, String host, int port,
+                         String password, String pathToKnownHosts) throws JSchException {
+        this.ssh = ssh;
+        openNewSession(username, host, port, password, pathToKnownHosts);
+        openChannel();
     }
 
     /**
@@ -38,23 +41,12 @@ public class SSHConnection {
      * @param password             password for logging into target host
      * @param pathToKnownHostsFile Path to known_hosts file for client's authentication to the target server
      */
-    public void openNewSession(String username, String host, int port,
-                               String password, String pathToKnownHostsFile) {
-        try {
-            ssh.setKnownHosts(pathToKnownHostsFile);
-            session = ssh.getSession(username, host, port);
-            session.setPassword(password);
-            session.connect();
-        } catch (JSchException e) {
-            LOGGER.log(System.Logger.Level.ERROR, e);
-        }
-    }
-
-    public ChannelShell getChannelShell() throws NullPointerException{
-            if (channel != null) {
-                return channel;
-            }
-            throw new NullPointerException("inputStream is null");
+    private void openNewSession(String username, String host, int port,
+                                String password, String pathToKnownHostsFile) throws JSchException {
+        ssh.setKnownHosts(pathToKnownHostsFile);
+        session = ssh.getSession(username, host, port);
+        session.setPassword(password);
+        session.connect();
     }
 
     /**
@@ -63,14 +55,14 @@ public class SSHConnection {
      * By invoking this method, the channel's input and output stream will be obtained.
      * The channel uses Shell mode not execution mode.
      */
-    public void openChannel() {
-        try {
-            channel = (ChannelShell) session.openChannel("shell");
-            channel.setPty(true);
-            channel.connect();
-        } catch (JSchException e) {
-            LOGGER.log(System.Logger.Level.ERROR, e);
-        }
+    private void openChannel() throws JSchException {
+        channel = (ChannelShell) session.openChannel("shell");
+        channel.setPty(true);
+        channel.connect();
+    }
+
+    public ChannelShell getChannelShell() {
+        return channel;
     }
 
     /**
