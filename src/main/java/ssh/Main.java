@@ -1,5 +1,7 @@
 package ssh;
 
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
 import ssh.exceptions.InputTooLargeException;
 
 import java.io.IOException;
@@ -15,20 +17,19 @@ public class Main {
         final String password = "1234";
         final int port = 22;
         final byte[] cmd = "python3 test.py\n".getBytes(StandardCharsets.UTF_8);
+        final JSch jsch = new JSch();
 
-        SSHConnection ssh = new SSHConnection();
-        ssh.openNewSession(username, host, port, password, pathToKnownHostsFile);
-        ssh.openChannel();
         try {
+            SSHConnection ssh = new SSHConnection(jsch, username, host, port, password, pathToKnownHostsFile);
             SSHExecution execution = new SSHExecution(ssh.getChannelShell());
             execution.executeRemoteShell(cmd);
             execution.run();
-        } catch (IOException | InputTooLargeException e) {
+            ssh.closeConnection();
+        } catch (JSchException | IOException | InputTooLargeException e) {
             LOGGER.log(System.Logger.Level.ERROR, e);
         } catch (InterruptedException e) {
             LOGGER.log(System.Logger.Level.ERROR, e);
             Thread.currentThread().interrupt();
         }
-        ssh.closeConnection();
     }
 }
