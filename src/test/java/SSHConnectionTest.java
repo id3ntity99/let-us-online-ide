@@ -9,7 +9,7 @@ import ssh.SSHConnection;
 
 import static org.mockito.Mockito.*;
 
-public class SSHConnectionTest {
+class SSHConnectionTest {
     private SSHConnection conn;
     private final String USER_NAME = "user1";
     private final String HOST = "host1";
@@ -19,13 +19,12 @@ public class SSHConnectionTest {
 
     private final JSch MOCKED_JSCH = mock(JSch.class);
     private final Session MOCKED_SESSION = mock(Session.class);
-    private final ChannelShell MOCKED_CHANNEL = mock(ChannelShell.class);
 
     @BeforeEach
     void setUp() throws JSchException{
         when(MOCKED_JSCH.getSession(USER_NAME, HOST, PORT)).thenReturn(MOCKED_SESSION);
-        when(MOCKED_SESSION.openChannel(anyString())).thenReturn(MOCKED_CHANNEL);
         conn = new SSHConnection(MOCKED_JSCH, USER_NAME, HOST, PORT, PASSWORD, KNOWN_HOSTS_PATH);
+        conn.run();
     }
 
     @Test
@@ -33,20 +32,17 @@ public class SSHConnectionTest {
         verify(MOCKED_JSCH).setKnownHosts(KNOWN_HOSTS_PATH);
         verify(MOCKED_SESSION).setPassword(PASSWORD);
         verify(MOCKED_SESSION).connect();
-        verify(MOCKED_CHANNEL).setPty(anyBoolean());
-        verify(MOCKED_CHANNEL).connect();
     }
 
     @Test
-    void testGetChannelShell() throws NullPointerException{
-        ChannelShell channel = conn.getChannelShell();
-        Assertions.assertInstanceOf(ChannelShell.class, channel);
+    void testGetSession() {
+        Session session = conn.getSession();
+        Assertions.assertInstanceOf(Session.class, session);
     }
 
     @Test
     void testCloseConnection() {
-        conn.closeConnection();
-        verify(MOCKED_CHANNEL).disconnect();
+        conn.closeSession();
         verify(MOCKED_SESSION).disconnect();
     }
 }

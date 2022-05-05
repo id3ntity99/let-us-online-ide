@@ -1,19 +1,29 @@
 import com.jcraft.jsch.ChannelShell;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 import org.junit.jupiter.api.*;
 import org.mockito.*;
 import ssh.SSHExecution;
 import ssh.exceptions.InputTooLargeException;
 
+import javax.websocket.RemoteEndpoint;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 import static org.mockito.Mockito.*;
 
 public class SSHExecutionTest {
     private SSHExecution sshExec;
+    @Spy
+    private static final javax.websocket.Session SPIED_CLIENT_SESSION = spy(javax.websocket.Session.class);
+    @Spy
+    private static final RemoteEndpoint.Basic MOCKED_CLIENT_ENDPOINT = spy(RemoteEndpoint.Basic.class);
     private static final ChannelShell MOCKED_CHANNEL = mock(ChannelShell.class);
+
+    private static final Session MOCKED_SESSION = mock(Session.class);
     @Spy
     private static final PipedInputStream PIPED_IN = spy(new PipedInputStream(2048));
     @Spy
@@ -24,12 +34,14 @@ public class SSHExecutionTest {
     public static void setup() throws IOException {
         when(MOCKED_CHANNEL.getInputStream()).thenReturn(PIPED_IN);
         when(MOCKED_CHANNEL.getOutputStream()).thenReturn(PIPED_OUT);
+        when(SPIED_CLIENT_SESSION.getBasicRemote()).thenReturn(MOCKED_CLIENT_ENDPOINT);
         PIPED_IN.connect(PIPED_OUT);
     }
 
     @BeforeEach
-    void initSSHExec() throws IOException {
-        sshExec = new SSHExecution(MOCKED_CHANNEL);
+    void initSSHExec() throws IOException, JSchException {
+        when(MOCKED_SESSION.openChannel(anyString())).thenReturn(MOCKED_CHANNEL);
+        sshExec = new SSHExecution(MOCKED_SESSION);
     }
 
     @AfterAll
@@ -45,55 +57,29 @@ public class SSHExecutionTest {
         verify(MOCKED_CHANNEL).getInputStream();
     }
 
-
-    @Test
-    @DisplayName("executeRemoteShell_WhenWorkingProperly_True")
-    void executeRemoteShellTest() throws IOException, InputTooLargeException {
-        String inputCmd = "ls";
-        byte[] byteInputCmd = inputCmd.getBytes(StandardCharsets.UTF_8);
-        int returnedBytesLen = sshExec.executeRemoteShell(byteInputCmd);
-        byte[] buffer = new byte[byteInputCmd.length];
-
-        PIPED_IN.read(buffer, 0, byteInputCmd.length);
-
-        Assertions.assertEquals(byteInputCmd.length, returnedBytesLen);
-        Assertions.assertArrayEquals(byteInputCmd, buffer);
-    }
-
-    @Test
-    void executeRemoteShellInputTooLarge() {
-        byte[] randomBytes = new String(new char[2001])
-                .replace('\0', 'a')
-                .getBytes(StandardCharsets.UTF_8);
-        Assertions.assertThrows(InputTooLargeException.class,
-                () -> sshExec.executeRemoteShell(randomBytes));
-    }
-
-    @Test
-    @DisplayName("executeRemoteShell_WhenExceptionRaised_True")
-    void executeRemoteShellExceptionTest() throws IOException {
-        byte[] cmdBytes = "date\n".getBytes(StandardCharsets.UTF_8);
-        doThrow(IOException.class)
-                .when(PIPED_OUT)
-                .write(ArgumentMatchers.any(byte[].class)); // OutputStream.write()을 호출하면 IOException 을 발생.
-        Assertions.assertThrows(IOException.class, () -> sshExec.executeRemoteShell(cmdBytes));
-        reset(PIPED_OUT);
-    }
-
-
     @Test
     void testRunWhenChannelIsDisconnectedTest() throws Exception {
+        String cmd = "ls";
+        byte[] bytesCmd = cmd.getBytes(StandardCharsets.UTF_8);
         when(MOCKED_CHANNEL.isConnected()).thenReturn(false);
         doReturn(1).when(PIPED_IN).available();
-        Assertions.assertThrows(IOException.class, () -> sshExec.run());
+        Assertions.assertThrows(IOException.class, () -> sshExec.execute(cmd, SPIED_CLIENT_SESSION));
+        byte[] buffer = new byte[2];
+        PIPED_IN.read(buffer);
+        Assertions.assertArrayEquals(bytesCmd, buffer);
         reset(PIPED_IN);
     }
 
     @Test
     void testRunWhenInputStreamIsEmptyTest() throws IOException {
+        String cmd = "ls";
+        byte[] bytesCmd = cmd.getBytes(StandardCharsets.UTF_8);
         when(MOCKED_CHANNEL.isConnected()).thenReturn(true);
         doReturn(0).when(PIPED_IN).available();
-        Assertions.assertThrows(IOException.class, () -> sshExec.run());
+        Assertions.assertThrows(IOException.class, () -> sshExec.execute(cmd, SPIED_CLIENT_SESSION));
+        byte[] buffer = new byte[2];
+        PIPED_IN.read(buffer);
+        Assertions.assertArrayEquals(bytesCmd, buffer);
         reset(PIPED_IN);
     }
 
@@ -102,18 +88,39 @@ public class SSHExecutionTest {
         when(MOCKED_CHANNEL.isConnected()).thenReturn(true);
         String validCmd = "date\n";
         byte[] bytesValidCmd = validCmd.getBytes(StandardCharsets.UTF_8);
-        sshExec.executeRemoteShell(bytesValidCmd);
-        byte[] result = sshExec.run();
-        Assertions.assertArrayEquals(bytesValidCmd, result);
+        doAnswer(invocation -> {
+            ByteBuffer arg0 = invocation.getArgument(0);
+            byte[] remaining = new byte[arg0.remaining()];
+            arg0.get(remaining);
+            Assertions.assertArrayEquals(bytesValidCmd, remaining);
+            return null;
+        }).when(MOCKED_CLIENT_ENDPOINT).sendBinary(any(ByteBuffer.class));
+        sshExec.execute(validCmd, SPIED_CLIENT_SESSION);
+        reset(MOCKED_CLIENT_ENDPOINT);
+
+    }
+
+
+    @Test
+    void testRunWithProperInput() throws Exception {
+        String randomString = new String(new char[512]).replace('\0', 'a');
+        byte[] randomBytes = randomString.getBytes(StandardCharsets.UTF_8);
+        doAnswer(invocation -> {
+            ByteBuffer arg0 = invocation.getArgument(0);
+            byte[] remaining = new byte[arg0.remaining()];
+            arg0.get(remaining);
+            Assertions.assertArrayEquals(randomBytes, remaining);
+            return null;
+        }).when(MOCKED_CLIENT_ENDPOINT).sendBinary(any(ByteBuffer.class));
+        sshExec.execute(randomString, SPIED_CLIENT_SESSION);
+        reset(MOCKED_CLIENT_ENDPOINT);
     }
 
     @Test
-    void testRunWithEqualOrLargerInput() throws Exception {
+    void testRunWithEqualOrLargerInput() {
         when(MOCKED_CHANNEL.isConnected()).thenReturn(true);
-        String randomString = new String(new char[512]).replace('\0', 'a');
-        byte[] randomBytes = randomString.getBytes(StandardCharsets.UTF_8);
-        sshExec.executeRemoteShell(randomBytes);
-        byte[] result = sshExec.run();
-        Assertions.assertArrayEquals(randomBytes, result);
+        String randomString = new String(new char[2001]).replace('\0', 'a');
+        Assertions.assertThrows(InputTooLargeException.class,
+                () -> sshExec.execute(randomString, SPIED_CLIENT_SESSION));
     }
 }
