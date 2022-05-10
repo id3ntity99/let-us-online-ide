@@ -1,10 +1,6 @@
-package ssh;
+package com.letus.ssh;
 
 import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import ssh.exceptions.InputTooLargeException;
-
-import java.io.IOException;
 
 public class Main {
     private static final System.Logger LOGGER = System.getLogger(Main.class.getName());

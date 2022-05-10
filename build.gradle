@@ -1,54 +1,36 @@
 plugins {
-    id 'jacoco'
-    id 'application'
+    id 'java'
+    id 'war'
 }
 
-jacoco {
-    toolVersion = '0.8.5'
-}
-
-jacocoTestReport {
-    dependsOn test
-    reports {
-        html.enabled true
-    }
-}
-
-jacocoTestCoverageVerification {
-    violationRules {
-        rule {
-            element = 'METHOD'
-            limit {
-                counter = 'BRANCH'
-                value = "COVEREDRATIO"
-                minimum = 0.70
-            }
-        }
-    }
-}
-
-group 'org.example'
+group 'com.example'
 version '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
 }
 
+ext {
+    junitVersion = '5.8.2'
+}
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
 dependencies {
     implementation 'com.jcraft:jsch:0.1.55'
-    implementation 'org.java-websocket:Java-WebSocket:1.5.3'
-    implementation 'javax:javaee-api:7.0'
-    testImplementation "org.mockito:mockito-core:4.5.1"
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    implementation 'com.google.api-client:google-api-client:1.34.0'
+    compileOnly('javax.servlet:javax.servlet-api:4.0.1')
+    compileOnly('javax.websocket:javax.websocket-api:1.1')
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
 }
 
 test {
     useJUnitPlatform()
-    finalizedBy jacocoTestReport
-    testLogging.showStandardStreams = true
-}
-
-application {
-    mainClass = "ssh.Main"
 }
