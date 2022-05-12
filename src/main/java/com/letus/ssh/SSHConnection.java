@@ -8,23 +8,9 @@ public class SSHConnection {
     private final JSch ssh;
     private Session session;
     private ChannelShell channel;
-    private final String username;
-    private final String host;
-    private final int port;
-    private final String password;
-    private final String pathToKnownHosts;
 
-    public SSHConnection(JSch ssh, String username, String host, int port,
-                         String password, String pathToKnownHosts) throws Exception {
+    public SSHConnection(JSch ssh) throws Exception {
         this.ssh = ssh;
-        this.username = username;
-        this.host = host;
-        this.port = port;
-        this.password = password;
-        this.pathToKnownHosts = pathToKnownHosts;
-        openNewSession(username, host, port, password, pathToKnownHosts);
-        openChannel();
-
     }
 
     private void openNewSession(String username, String host, int port,
@@ -33,24 +19,34 @@ public class SSHConnection {
         session = ssh.getSession(username, host, port);
         session.setPassword(password);
         session.setTimeout(1800000);
-        //session.noMoreSessionChannels();
         session.connect();
     }
 
-    private void openChannel() throws JSchException{
+    private void openChannel() throws Exception {
         channel = (ChannelShell) session.openChannel("shell");
         channel.connect();
+        session.noMoreSessionChannels();
 
     }
 
-    public ChannelShell getChannel() throws IOException{
+    public void openSSHConnection(String username, String host, int port,
+                                  String password, String pathToKnownHostsFile) throws Exception {
+        openNewSession(username, host, port, password, pathToKnownHostsFile);
+        openChannel();
+
+    }
+
+    public ChannelShell getChannel() throws IOException {
         if (channel == null) {
             throw new IOException("Channel is null");
         }
         return channel;
     }
 
-    public void closeSession() {
+    public void closeSSHConnection() throws IOException {
         session.disconnect();
+        channel.disconnect();
+        channel.getInputStream().close();
+        channel.getOutputStream().close();
     }
 }
