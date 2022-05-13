@@ -16,20 +16,19 @@ public class Auth {
     //  - CLIENT_ID must be stored in environment variables.
     //  - Current CLIENT_ID is dummy client id.
     private static final String CLIENT_ID = "407408718192.apps.googleusercontent.com";
-    private final GoogleIdTokenVerifier verifier;
+    private static final GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
+            .setAudience(Collections.singletonList(CLIENT_ID))
+            .build();
 
-    public Auth() {
-        this.verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
-                .setAudience(Collections.singletonList(CLIENT_ID))
-                .build();
+    Auth() {
     }
 
-    public boolean verifyIdToken(String idTokenString) {
+    public static boolean verifyIdToken(String idTokenString) {
         boolean isVerified = false;
         try {
             // Parse string id token to GoogleIdToken
             GoogleIdToken idToken = GoogleIdToken.parse(new GsonFactory(), idTokenString);
-           return idToken.verify(verifier);
+            return idToken.verify(verifier);
 
         } catch (IOException | GeneralSecurityException e) {
             System.out.println(e);
@@ -37,7 +36,7 @@ public class Auth {
         return isVerified;
     }
 
-    public UserInfo getInfo(String idTokenString) throws IOException, GeneralSecurityException {
+    public static UserInfo getInfo(String idTokenString) throws IOException, GeneralSecurityException {
         GoogleIdToken idToken = verifier.verify(idTokenString);
         UserInfo userInfo;
         if (idToken != null) {
