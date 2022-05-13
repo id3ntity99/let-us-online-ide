@@ -1,7 +1,6 @@
 package com.letus.tokenauth;
 
 import com.google.gson.Gson;
-import com.letus.tokenauth.Auth;
 import com.letus.user.UserInfo;
 import org.json.JSONObject;
 
@@ -12,11 +11,10 @@ import javax.servlet.annotation.*;
 
 @WebServlet(name = "authTokenServlet", value = "/auth")
 public class AuthServlet extends HttpServlet {
-    private Auth auth;
 
     @Override
     public void init() {
-        auth = new Auth();
+
     }
 
     @Override
@@ -27,7 +25,7 @@ public class AuthServlet extends HttpServlet {
             PrintWriter out = response.getWriter();
             BufferedReader reqReader = request.getReader();
             String idToken = readRequestBody(reqReader).getString("idToken");
-            UserInfo userInfo = auth.getInfo(idToken);
+            UserInfo userInfo = Auth.getInfo(idToken);
             String userInfoString = new Gson().toJson(userInfo);
             out.print(userInfoString);
             out.flush();
@@ -43,7 +41,7 @@ public class AuthServlet extends HttpServlet {
             while ((line = buffReader.readLine()) != null) {
                 stringBuff.append(line);
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             System.out.println(e);
         }
         return new JSONObject(stringBuff.toString());
