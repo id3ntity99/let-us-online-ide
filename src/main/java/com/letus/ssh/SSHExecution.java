@@ -35,8 +35,8 @@ public class SSHExecution {
     }
 
 
-    public static byte[] readExecResult(byte[] cmd, User user)
-            throws InterruptedException, IOException, InputTooLargeException {
+    public static void readExecResult(byte[] cmd, User user)
+            throws IOException, InputTooLargeException {
         ChannelShell channel = user.getChannel();
         InputStream inputStream = channel.getInputStream();
         OutputStream outputStream = channel.getOutputStream();
@@ -44,17 +44,19 @@ public class SSHExecution {
 
         writeCommand(outputStream, cmd);
 
-        Thread.sleep(80);
-        if (!channel.isConnected() && inputStream.available() <= 0) {
-            throw new IOException("Either channel is not connected or input stream is empty");
+        try {
+            Thread.sleep(80);
+            if (!channel.isConnected() && inputStream.available() <= 0) {
+                throw new IOException("Either channel is not connected or input stream is empty");
+            }
+            byte[] byteBuffer = new byte[512];
+            while (channel.isConnected() && inputStream.available() > 0) {
+                byteBuffer = readInputStream(inputStream, byteBuffer);
+                clientSession.getBasicRemote().sendBinary(ByteBuffer.wrap(byteBuffer));
+                Thread.sleep(20);
+            }
+        } catch (InterruptedException | IOException e) {
+           Thread.currentThread().interrupt();
         }
-        byte[] byteBuffer = new byte[512];
-        while (channel.isConnected() && inputStream.available() > 0) {
-            byteBuffer = readInputStream(inputStream, byteBuffer);
-            ByteBuffer buffer = ByteBuffer.wrap(byteBuffer);
-            clientSession.getBasicRemote().sendBinary(buffer);
-            Thread.sleep(20);
-        }
-        return byteBuffer;
     }
 }
