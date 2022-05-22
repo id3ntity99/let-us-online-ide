@@ -4,11 +4,11 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
-import com.letus.user.UserInfo;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
+
 
 public class Auth {
     // TODO
@@ -36,18 +36,11 @@ public class Auth {
         return isVerified;
     }
 
-    public static UserInfo getInfo(String idTokenString) throws IOException, GeneralSecurityException {
+    public static GoogleIdToken.Payload getPayLoad(String idTokenString)
+            throws IOException, GeneralSecurityException {
         GoogleIdToken idToken = verifier.verify(idTokenString);
-        UserInfo userInfo;
         if (idToken != null) {
-            GoogleIdToken.Payload payload = idToken.getPayload();
-            String userId = payload.getSubject();
-            String email = payload.getEmail();
-            boolean isEmailVerified = payload.getEmailVerified();
-            String name = (String) payload.get("name");
-            String picUrl = (String) payload.get("picture");
-            userInfo = new UserInfo(userId, email, isEmailVerified, name, picUrl);
-            return userInfo;
+            return idToken.getPayload();
         } else {
             System.out.println("Invalid ID Token");
         }
