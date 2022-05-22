@@ -1,11 +1,9 @@
 package com.letus.tokenauth;
 
-import com.google.gson.Gson;
-import com.letus.user.UserInfo;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.security.GeneralSecurityException;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 
@@ -25,11 +23,18 @@ public class AuthServlet extends HttpServlet {
             PrintWriter out = response.getWriter();
             BufferedReader reqReader = request.getReader();
             String idToken = readRequestBody(reqReader).getString("idToken");
-            UserInfo userInfo = Auth.getInfo(idToken);
-            String userInfoString = new Gson().toJson(userInfo);
-            out.print(userInfoString);
-            out.flush();
-        } catch (IOException | GeneralSecurityException e) {
+            if(Auth.verifyIdToken(idToken)) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.append("success", true);
+                out.print(jsonObject);
+                out.flush();
+            } else {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.append("success", "false");
+                out.print(jsonObject);
+                out.flush();
+            }
+        } catch (IOException | JSONException e) {
             System.out.println(e);
         }
     }
