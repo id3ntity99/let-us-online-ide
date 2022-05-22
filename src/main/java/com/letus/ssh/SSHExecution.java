@@ -1,5 +1,6 @@
 package com.letus.ssh;
 
+import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelShell;
 import com.letus.ssh.exceptions.InputTooLargeException;
 import com.letus.user.User;
@@ -11,6 +12,11 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+
+/*
+* @deprecated Use Docker-exec instead of SSH connection.
+* */
+@Deprecated
 public class SSHExecution {
     private SSHExecution() {}
     private static void writeCommand(OutputStream outputStream,
@@ -37,7 +43,7 @@ public class SSHExecution {
 
     public static void readExecResult(byte[] cmd, User user)
             throws IOException, InputTooLargeException {
-        ChannelShell channel = user.getChannel();
+        ChannelShell channel = null;
         InputStream inputStream = channel.getInputStream();
         OutputStream outputStream = channel.getOutputStream();
         Session clientSession = user.getClientSession();

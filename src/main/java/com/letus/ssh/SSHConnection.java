@@ -1,46 +1,58 @@
 package com.letus.ssh;
 
 import com.jcraft.jsch.*;
+import com.letus.command.client.Commands;
+import com.letus.user.User;
 
 import java.io.IOException;
+import java.util.Properties;
 
+/*
+* @deprecated Use Docker-exec command instead of SSH connection.
+* */
+@Deprecated
 public class SSHConnection {
-    private final JSch ssh;
+    private static final String USERNAME = "runner";
+    private static final String PASSWORD = "1234";
+    private static final int PORT = 22;
+    private static final String PATH_TO_KNOWN_HOSTS = "/home/yosef/.ssh/known_hosts";
+    private final JSch ssh = new JSch();
     private Session session;
     private ChannelShell channel;
+    private User user;
 
-    public SSHConnection(JSch ssh) throws Exception {
-        this.ssh = ssh;
+    public SSHConnection(User user) {
+        this.user = user;
     }
 
-    private void openNewSession(String username, String host, int port,
-                                String password, String pathToKnownHostsFile) throws Exception {
-        ssh.setKnownHosts(pathToKnownHostsFile);
-        session = ssh.getSession(username, host, port);
-        session.setPassword(password);
+    public void openNewSession() throws Exception {
+        String ipAddress = Commands.inspectContainerNetworkCmd()
+                .withContainer(user.getContainer())
+                .exec()
+                .getNetworkMap()
+                .get("Bridge")
+                .getIpAddress();
+        ssh.setKnownHosts(PATH_TO_KNOWN_HOSTS);
+        session = ssh.getSession(USERNAME, ipAddress, PORT);
+        Properties config = new Properties();
+        config.put("StrictHostKeyChecking", "no");
+        session.setConfig(config);
+        session.setPassword(PASSWORD);
         session.setTimeout(1800000);
         session.connect();
     }
 
-    private void openChannel() throws Exception {
+    public void openChannel() throws Exception {
         channel = (ChannelShell) session.openChannel("shell");
         channel.connect();
         session.noMoreSessionChannels();
-
+        //user.setChannel(channel);
     }
 
-    public void openSSHConnection(String username, String host, int port,
-                                  String password, String pathToKnownHostsFile) throws Exception {
-        openNewSession(username, host, port, password, pathToKnownHostsFile);
+    public void openSSHConnection() throws Exception {
+        openNewSession();
         openChannel();
 
-    }
-
-    public ChannelShell getChannel() throws IOException {
-        if (channel == null) {
-            throw new IOException("Channel is null");
-        }
-        return channel;
     }
 
     public void closeSSHConnection() throws IOException {
