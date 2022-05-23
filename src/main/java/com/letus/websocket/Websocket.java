@@ -1,7 +1,7 @@
 package com.letus.websocket;
 
 import com.github.dockerjava.api.model.Container;
-import com.letus.command.client.Commands;
+import com.letus.command.client.CommandFacade;
 import com.letus.user.User;
 
 import javax.websocket.*;
@@ -23,29 +23,16 @@ public class Websocket {
             session.setMaxIdleTimeout(1800000);
             try {
                 // TODO: 아래 코드를 감싸는 파사드 클래스 하나 만들기 (너무 지저분함).
-                // TODO: command.client.Commands를 없애고 파사드 클래스를 Command Client로 사용.
-                Container container = Commands.createContainerCmd()
-                        .withImage("runner-image")
-                        .exec()
-                        .getContainer();
-                Commands.startContainerCmd()
-                        .withContainer(container)
-                        .exec();
-                User user = new User.UserBuilder()
-                        .withInputStream(new PipedInputStream())
+                // TODO: command.client.Commands를 파사드 클래스로 변경하여 Command Client로 사용.
+                Container container = CommandFacade.createContainerCmd("runner-image");
+                CommandFacade.startContainerCmd(container);
+                User user = new User.UserBuilder().withInputStream(new PipedInputStream())
                         .withOutputStream(new PipedOutputStream())
                         .withContainer(container)
                         .withClientSession(session)
                         .build();
-                String execId = Commands.createExecContainerCmd()
-                        .withContainer(container)
-                        .withUser(user)
-                        .exec()
-                        .getExecId();
-                Commands.startExecContainerCmd()
-                        .withExecId(execId)
-                        .withUser(user)
-                        .exec();
+                String execId = CommandFacade.createExecContainerCmd(container);
+                CommandFacade.startExecContainerCmd(user, execId);
                 sshChannelHashMap.put(idToken, user);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -54,17 +41,14 @@ public class Websocket {
             try {
                 User user = sshChannelHashMap.get(idToken);
                 user.setClientSession(session);
-                //TODO 웹소켓 종료 시 세션도 종료되지만, docker exec i/o를 처리하는 스레드는 계속 종료된 세션을 이용하여 통신하므로 이를 해결해야 함.
-                //  해결: Callback의 인스턴스를 만들 때 session 변수를 초기화했기때문에 문제가 발생. onNext 메서드가 실행될때마다 User 객체로부터 clientSession을 가져옴으로써 문제 해결.
                 Container container = user.getContainer();
-                boolean isRunning = Boolean.TRUE.equals(Commands.inspectContainer()
-                        .withContainer(container)
-                        .exec()
+                boolean isRunning = Boolean.TRUE.equals(
+                        CommandFacade.inspectContainer(container)
                         .getInspection()
                         .getState()
                         .getRunning());
                 if (!isRunning) {
-                    Commands.startContainerCmd().withContainer(container).exec();
+                    CommandFacade.startContainerCmd(container);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
