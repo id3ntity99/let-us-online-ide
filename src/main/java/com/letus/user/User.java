@@ -52,8 +52,6 @@ public class User implements Closeable {
     @Override
     public void close() {
         try {
-            this.in.close();
-            this.out.close();
             this.clientSession.close();
         } catch(IOException e) {
             e.printStackTrace();
