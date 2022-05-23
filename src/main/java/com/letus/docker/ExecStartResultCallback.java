@@ -11,13 +11,15 @@ import java.nio.ByteBuffer;
 
 public class ExecStartResultCallback extends ResultCallbackTemplate<ExecStartResultCallback, Frame> {
     private Session session;
+    private User user;
 
     public ExecStartResultCallback(User user) {
-        this.session = user.getClientSession();
+        this.user = user;
     }
 
     @Override
     public void onNext(Frame item) {
+        session = user.getClientSession();
         if (item != null) {
             try {
                 switch (item.getStreamType()) {
@@ -26,6 +28,8 @@ public class ExecStartResultCallback extends ResultCallbackTemplate<ExecStartRes
                     case STDERR:
                         if (session != null) {
                             byte[] payload = item.getPayload();
+                            System.out.println(session.isOpen());
+                            System.out.println(session);
                             session.getBasicRemote().sendBinary(ByteBuffer.wrap(payload));
                         }
                         break;
