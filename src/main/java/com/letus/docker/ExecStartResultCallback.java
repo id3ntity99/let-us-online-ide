@@ -28,8 +28,6 @@ public class ExecStartResultCallback extends ResultCallbackTemplate<ExecStartRes
                     case STDERR:
                         if (session != null) {
                             byte[] payload = item.getPayload();
-                            System.out.println(session.isOpen());
-                            System.out.println(session);
                             session.getBasicRemote().sendBinary(ByteBuffer.wrap(payload));
                         }
                         break;

@@ -55,6 +55,7 @@ public class Websocket {
                 User user = sshChannelHashMap.get(idToken);
                 user.setClientSession(session);
                 //TODO 웹소켓 종료 시 세션도 종료되지만, docker exec i/o를 처리하는 스레드는 계속 종료된 세션을 이용하여 통신하므로 이를 해결해야 함.
+                //  해결: Callback의 인스턴스를 만들 때 session 변수를 초기화했기때문에 문제가 발생. onNext 메서드가 실행될때마다 User 객체로부터 clientSession을 가져옴으로써 문제 해결.
                 Container container = user.getContainer();
                 boolean isRunning = Boolean.TRUE.equals(Commands.inspectContainer()
                         .withContainer(container)
