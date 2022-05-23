@@ -11,33 +11,33 @@ public class CommandFacade {
     private CommandFacade() {
     }
 
-    public static Container createContainerCmd(String image) {
+    public static Container create(String image) {
         return new CreateContainerCmd().withImage(image)
                 .exec()
                 .getContainer();
     }
-    public static Container startContainerCmd(Container container) {
+    public static Container start(Container container) {
         return new StartContainerCmd().withContainer(container)
                 .exec()
                 .getContainer();
     }
 
 
-    public static InspectContainerNetworkRes inspectContainerNetworkCmd(Container container) {
+    public static InspectContainerNetworkRes inspectNetwork(Container container) {
         return new InspectContainerNetworkCmd().withContainer(container).exec();
     }
 
-    public static InspectContainerRes inspectContainer(Container container) {
+    public static InspectContainerRes inspect(Container container) {
         return new InspectContainerCmd().withContainer(container).exec();
     }
 
-    public static String createExecContainerCmd(Container container) {
+    public static String createExec(Container container) {
         return new CreateExecContainerCmd().withContainer(container)
                 .exec()
                 .getExecId();
     }
 
-    public static void startExecContainerCmd(User user, String execId) {
+    public static void startExec(User user, String execId) {
         new StartExecContainerCmd().withExecId(execId)
                 .withUser(user)
                 .exec();
