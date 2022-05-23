@@ -6,9 +6,16 @@ import com.letus.command.response.InspectContainerNetworkRes;
 import com.letus.command.response.InspectContainerRes;
 import com.letus.user.User;
 
-
-public class CommandFacade {
-    private CommandFacade() {
+/**
+ * An instance of this class plays the role of both an Invoker(, which is part of Command pattern)
+ * and a Facade. Technically, this class is an Invoker as well as a Client because
+ * it creates Command objects and triggers exec method of the commands.
+ * The real Client (the Websocket class) just only need to use this facade object
+ * to interact with ContainerManager (the receiver) indirectly.
+ * After that, this class returns corresponding concrete Response objects for later uses.
+ */
+public class ContainerCommands {
+    private ContainerCommands() {
     }
 
     public static Container create(String image) {
@@ -16,6 +23,7 @@ public class CommandFacade {
                 .exec()
                 .getContainer();
     }
+
     public static Container start(Container container) {
         return new StartContainerCmd().withContainer(container)
                 .exec()
