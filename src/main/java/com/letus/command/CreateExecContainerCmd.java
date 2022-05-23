@@ -6,15 +6,10 @@ import com.letus.command.response.Response;
 import com.letus.docker.ContainerManager;
 import com.letus.user.User;
 
-import javax.annotation.Nonnull;
 
-
-public class CreateExecContainerCmd implements Command{
+public class CreateExecContainerCmd implements Command {
     ContainerManager manager = new ContainerManager();
     Container container;
-
-    User user;
-
     String execId;
 
     public CreateExecContainerCmd withContainer(Container container) {
@@ -22,13 +17,8 @@ public class CreateExecContainerCmd implements Command{
         return this;
     }
 
-    public CreateExecContainerCmd withUser(User user) {
-        this.user = user;
-        return this;
-    }
-
     public CreateExecContainerRes exec() {
-        execId = manager.createExec(container, user);
+        execId = manager.createExec(container);
         return new CreateExecContainerRes(execId);
     }
 }

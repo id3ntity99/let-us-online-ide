@@ -60,7 +60,7 @@ public class ContainerManager {
         }
     }
 
-    public String createExec(Container container, User user) {
+    public String createExec(Container container) {
         ExecCreateCmd createCmd = client.execCreateCmd(container.getId());
         ExecCreateCmdResponse res = createCmd.withCmd("/bin/sh")
                 .withTty(true)
