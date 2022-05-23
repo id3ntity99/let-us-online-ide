@@ -1,7 +1,6 @@
 package com.letus.command;
 
 import com.github.dockerjava.api.model.Container;
-import com.letus.command.response.Response;
 import com.letus.command.response.StartContainerRes;
 import com.letus.docker.ContainerManager;
 
@@ -14,7 +13,7 @@ public class StartContainerCmd implements Command{
         return this;
     }
 
-    public Response exec() {
+    public StartContainerRes exec() {
         manager.start(container);
         return new StartContainerRes(container);
     }
