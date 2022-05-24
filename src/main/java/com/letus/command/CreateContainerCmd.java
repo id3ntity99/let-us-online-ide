@@ -10,15 +10,20 @@ import com.letus.docker.ContainerManager;
  */
 public class CreateContainerCmd implements Command {
     private String imageName;
-    private final ContainerManager containerManager = new ContainerManager();
+    private ContainerManager manager;
 
     public CreateContainerCmd withImage(String imageName) {
         this.imageName = imageName;
         return this;
     }
 
+    public CreateContainerCmd withManager(ContainerManager manager) {
+        this.manager = manager;
+        return this;
+    }
+
     public CreateContainerRes exec() {
-        Container container = containerManager.create(imageName);
+        Container container = manager.create(imageName);
         return new CreateContainerRes(container);
     }
 }

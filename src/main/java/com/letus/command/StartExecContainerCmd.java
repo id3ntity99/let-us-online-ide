@@ -4,7 +4,7 @@ import com.letus.docker.ContainerManager;
 import com.letus.user.User;
 
 public class StartExecContainerCmd implements Runnable {
-    ContainerManager manager = new ContainerManager();
+    ContainerManager manager;
     String execId;
     User user;
 
@@ -15,6 +15,11 @@ public class StartExecContainerCmd implements Runnable {
 
     public StartExecContainerCmd withUser(User user) {
         this.user = user;
+        return this;
+    }
+
+    public StartExecContainerCmd withManager(ContainerManager manager) {
+        this.manager = manager;
         return this;
     }
 

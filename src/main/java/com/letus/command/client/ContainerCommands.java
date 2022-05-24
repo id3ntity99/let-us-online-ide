@@ -4,6 +4,7 @@ import com.github.dockerjava.api.model.Container;
 import com.letus.command.*;
 import com.letus.command.response.InspectContainerNetworkRes;
 import com.letus.command.response.InspectContainerRes;
+import com.letus.docker.ContainerManager;
 import com.letus.user.User;
 
 /**
@@ -15,38 +16,48 @@ import com.letus.user.User;
  * After that, this class returns corresponding concrete Response objects for later uses.
  */
 public class ContainerCommands {
+    private static final ContainerManager MANAGER = new ContainerManager();
+
     private ContainerCommands() {
     }
 
     public static Container create(String image) {
         return new CreateContainerCmd().withImage(image)
+                .withManager(MANAGER)
                 .exec()
                 .getContainer();
     }
 
     public static Container start(Container container) {
         return new StartContainerCmd().withContainer(container)
+                .withManager(MANAGER)
                 .exec()
                 .getContainer();
     }
 
 
     public static InspectContainerNetworkRes inspectNetwork(Container container) {
-        return new InspectContainerNetworkCmd().withContainer(container).exec();
+        return new InspectContainerNetworkCmd().withContainer(container)
+                .withManager(MANAGER)
+                .exec();
     }
 
     public static InspectContainerRes inspect(Container container) {
-        return new InspectContainerCmd().withContainer(container).exec();
+        return new InspectContainerCmd().withContainer(container)
+                .withManager(MANAGER)
+                .exec();
     }
 
     public static String createExec(Container container) {
         return new CreateExecContainerCmd().withContainer(container)
+                .withManager(MANAGER)
                 .exec()
                 .getExecId();
     }
 
     public static void startExec(User user, String execId) {
         new StartExecContainerCmd().withExecId(execId)
+                .withManager(MANAGER)
                 .withUser(user)
                 .exec();
     }

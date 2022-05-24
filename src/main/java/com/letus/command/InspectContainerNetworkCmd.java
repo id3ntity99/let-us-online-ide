@@ -10,10 +10,15 @@ import java.util.Map;
 public class InspectContainerNetworkCmd implements Command {
     private Container container;
 
-    private ContainerManager manager = new ContainerManager();
+    private ContainerManager manager;
 
     public InspectContainerNetworkCmd withContainer(Container container) {
         this.container = container;
+        return this;
+    }
+
+    public InspectContainerNetworkCmd withManager(ContainerManager manager) {
+        this.manager = manager;
         return this;
     }
 
