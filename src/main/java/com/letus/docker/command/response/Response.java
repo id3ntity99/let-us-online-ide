@@ -1,4 +1,4 @@
-package com.letus.command.response;
+package com.letus.docker.command.response;
 
 public abstract class Response<T> {
     T value;

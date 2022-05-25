@@ -1,14 +1,14 @@
-package com.letus.command;
+package com.letus.docker.command;
 
 import com.github.dockerjava.api.model.Container;
-import com.letus.command.response.CreateContainerRes;
+import com.letus.docker.command.response.CreateContainerRes;
 import com.letus.docker.ContainerManager;
 
 /**
  * This command is responsible for interacting with ContainerManager.createContainer()
  * which creates a new Docker container.
  */
-public class CreateContainerCmd implements Command {
+public class CreateContainerCmd extends AbstractCommand{
     private String imageName;
     private ContainerManager manager;
 

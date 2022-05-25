@@ -1,4 +1,4 @@
-package com.letus.command;
+package com.letus.docker.command;
 
 import com.letus.docker.ContainerManager;
 import com.letus.user.User;

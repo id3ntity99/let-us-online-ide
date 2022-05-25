@@ -1,8 +1,8 @@
-package com.letus.command;
+package com.letus.docker.command;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Container;
-import com.letus.command.response.InspectContainerRes;
+import com.letus.docker.command.response.InspectContainerRes;
 import com.letus.docker.ContainerManager;
 
 /**

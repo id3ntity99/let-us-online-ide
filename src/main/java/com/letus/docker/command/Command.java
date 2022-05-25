@@ -1,6 +1,6 @@
-package com.letus.command;
+package com.letus.docker.command;
 
-import com.letus.command.response.Response;
+import com.letus.docker.command.response.Response;
 
 /**
  * Command to interact with ContainerManager.

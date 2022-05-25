@@ -1,8 +1,8 @@
-package com.letus.command;
+package com.letus.docker.command;
 
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ContainerNetwork;
-import com.letus.command.response.InspectContainerNetworkRes;
+import com.letus.docker.command.response.InspectContainerNetworkRes;
 import com.letus.docker.ContainerManager;
 
 import java.util.Map;
