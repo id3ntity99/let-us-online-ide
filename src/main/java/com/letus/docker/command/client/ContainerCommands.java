@@ -2,9 +2,9 @@ package com.letus.docker.command.client;
 
 import com.github.dockerjava.api.model.Container;
 import com.letus.docker.command.*;
+import com.letus.docker.command.response.DefaultResponse;
 import com.letus.docker.command.response.InspectContainerNetworkRes;
 import com.letus.docker.command.response.InspectContainerRes;
-import com.letus.docker.ContainerManager;
 import com.letus.user.User;
 
 /**
@@ -16,49 +16,48 @@ import com.letus.user.User;
  * After that, this class returns corresponding concrete Response objects for later uses.
  */
 public class ContainerCommands {
-    private static final ContainerManager MANAGER = new ContainerManager();
-
     private ContainerCommands() {
     }
 
     public static Container create(String image) {
-        return new CreateContainerCmd().withImage(image)
-                .withManager(MANAGER)
+        return new CreateCmd().withImage(image)
                 .exec()
                 .getContainer();
     }
 
     public static Container start(Container container) {
-        return new StartContainerCmd().withContainer(container)
-                .withManager(MANAGER)
+        return new StartCmd().withContainer(container)
                 .exec()
                 .getContainer();
     }
 
+    public static DefaultResponse stop(Container container) {
+        return new StopCmd().withContainer(container).exec();
+    }
+
 
     public static InspectContainerNetworkRes inspectNetwork(Container container) {
-        return new InspectContainerNetworkCmd().withContainer(container)
-                .withManager(MANAGER)
+        return new InspectNetworkCmd().withContainer(container)
                 .exec();
     }
 
     public static InspectContainerRes inspect(Container container) {
-        return new InspectContainerCmd().withContainer(container)
-                .withManager(MANAGER)
-                .exec();
+        return new InspectCmd().withContainer(container).exec();
     }
 
     public static String createExec(Container container) {
-        return new CreateExecContainerCmd().withContainer(container)
-                .withManager(MANAGER)
+        return new CreateExecCmd().withContainer(container)
                 .exec()
                 .getExecId();
     }
 
     public static void startExec(User user, String execId) {
-        new StartExecContainerCmd().withExecId(execId)
-                .withManager(MANAGER)
+        new StartExecCmd().withExecId(execId)
                 .withUser(user)
                 .exec();
+    }
+
+    public static boolean remove(Container container) {
+        return new RemoveCmd().withContainer(container).exec().getSuccess();
     }
 }
