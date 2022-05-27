@@ -1,13 +1,20 @@
 package com.letus.docker.command;
 
+import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.ExecStartCmd;
 import com.letus.docker.ExecStartResultCallback;
-import com.letus.docker.command.response.DefaultResponse;
 import com.letus.user.User;
 
-public class StartExecCmd extends AbstractCommand implements Runnable {
+import javax.annotation.Nullable;
+
+public class StartExecCmd extends AbstractCommand<StartExecCmd, Void> implements Runnable {
     String execId;
     User user;
+
+    public StartExecCmd withDockerClient(DockerClient dockerClient) {
+        this.dockerClient = dockerClient;
+        return this;
+    }
 
     public StartExecCmd withExecId(String execId) {
         this.execId = execId;
@@ -34,14 +41,11 @@ public class StartExecCmd extends AbstractCommand implements Runnable {
         }
     }
 
-    public DefaultResponse exec() {
+    @Nullable
+    public Void exec() {
         Thread execThread = new Thread(this);
         execThread.setName("execStartThread");
         execThread.start();
-        if (Thread.currentThread().isAlive()) {
-            return new DefaultResponse(true);
-        } else {
-            return new DefaultResponse(false);
-        }
+        return null;
     }
 }

@@ -1,21 +1,29 @@
 package com.letus.docker.command;
 
+import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.RemoveContainerCmd;
 import com.github.dockerjava.api.model.Container;
-import com.letus.docker.command.response.DefaultResponse;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
-public class RemoveCmd extends AbstractCommand {
+public class RemoveCmd extends AbstractCommand<RemoveCmd, Void> {
     @CheckForNull
     private Container container;
+
+    @Override
+    public RemoveCmd withDockerClient(DockerClient dockerClient) {
+        this.dockerClient = dockerClient;
+        return this;
+    }
 
     public RemoveCmd withContainer(Container container) {
         this.container = container;
         return this;
     }
 
-    public DefaultResponse exec() {
+    @Nullable
+    public Void exec() {
         String containerId = container.getId();
         boolean isRemoved = false;
         RemoveContainerCmd cmd = dockerClient.removeContainerCmd(containerId);
@@ -23,6 +31,6 @@ public class RemoveCmd extends AbstractCommand {
         if (search(containerId) == null) { // 컨테이너가 삭제되어 search 되지 않는경우
             isRemoved = true;
         }
-        return new DefaultResponse(isRemoved);
+        return null;
     }
 }

@@ -1,14 +1,19 @@
 package com.letus.docker.command;
 
+import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.ExecCreateCmd;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.model.Container;
 import com.letus.docker.command.response.CreateExecContainerRes;
 
 
-public class CreateExecCmd extends AbstractCommand{
+public class CreateExecCmd extends AbstractCommand<CreateExecCmd, CreateExecContainerRes> {
     Container container;
-    String execId;
+
+    public CreateExecCmd withDockerClient(DockerClient dockerClient) {
+        this.dockerClient = dockerClient;
+        return this;
+    }
 
     public CreateExecCmd withContainer(Container container) {
         this.container = container;

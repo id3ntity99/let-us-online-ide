@@ -1,15 +1,27 @@
 package com.letus.docker.command;
 
+import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.StartContainerCmd;
 import com.github.dockerjava.api.model.Container;
 import com.letus.docker.command.response.StartContainerRes;
-import com.letus.docker.ContainerManager;
 
 /**
  * This command is responsible for starting a pre-created container.
  */
-public class StartCmd extends AbstractCommand {
+public class StartCmd extends AbstractCommand<StartCmd, StartContainerRes> {
     private Container container;
+
+    /**
+     * A method to initialize dockerClient field of the instance.
+     *
+     * @param dockerClient A Docker-api client as a receiver.
+     * @return Returns StartCmd object with initialized dockerClient field.
+     */
+    @Override
+    public StartCmd withDockerClient(DockerClient dockerClient) {
+        this.dockerClient = dockerClient;
+        return this;
+    }
 
     /**
      * A method to initialize container field of the instance.
