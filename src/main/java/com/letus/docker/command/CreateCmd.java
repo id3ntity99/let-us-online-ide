@@ -2,13 +2,18 @@ package com.letus.docker.command;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.exception.ConflictException;
+import com.github.dockerjava.api.exception.NotFoundException;
 import com.letus.docker.command.response.CreateContainerRes;
+
+import javax.annotation.CheckForNull;
 
 /**
  * This command is responsible for interacting with ContainerManager.createContainer()
  * which creates a new Docker container.
  */
 public class CreateCmd extends AbstractCommand<CreateCmd, CreateContainerRes> {
+    @CheckForNull
     private String imageName;
 
     /**
@@ -41,14 +46,20 @@ public class CreateCmd extends AbstractCommand<CreateCmd, CreateContainerRes> {
      * @return Returns a response that contains necessary information for later uses.
      */
     public CreateContainerRes exec() {
+        CreateContainerRes res = null;
         try (CreateContainerCmd cmd = dockerClient.createContainerCmd(imageName)) {
-            String containerId = cmd.withAttachStderr(true)
-                    .withAttachStdin(true)
-                    .withAttachStderr(true)
-                    .withTty(true)
-                    .exec()
-                    .getId();
-            return new CreateContainerRes(search(containerId));
+            try {
+                String containerId = cmd.withAttachStderr(true)
+                        .withAttachStdin(true)
+                        .withAttachStderr(true)
+                        .withTty(true)
+                        .exec()
+                        .getId();
+                res = new CreateContainerRes(search(containerId));
+            } catch (ConflictException | NotFoundException e) {
+                logger.error("Cannot create new docker container...", e);
+            }
+            return res;
         }
     }
 }

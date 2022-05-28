@@ -2,6 +2,7 @@ package com.letus.docker.command;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.RemoveContainerCmd;
+import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Container;
 
 import javax.annotation.CheckForNull;
@@ -25,11 +26,11 @@ public class RemoveCmd extends AbstractCommand<RemoveCmd, Void> {
     @Nullable
     public Void exec() {
         String containerId = container.getId();
-        boolean isRemoved = false;
         RemoveContainerCmd cmd = dockerClient.removeContainerCmd(containerId);
-        cmd.withRemoveVolumes(true).exec();
-        if (search(containerId) == null) { // 컨테이너가 삭제되어 search 되지 않는경우
-            isRemoved = true;
+        try {
+            cmd.withRemoveVolumes(true).exec();
+        } catch (NotFoundException e) {
+            logger.error("Couldn't remove container...", e);
         }
         return null;
     }
