@@ -54,15 +54,6 @@ public class ContainerCommands {
                 .exec();
     }
 
-    @Deprecated
-    /**
-     * @deprecated Use ContainerCommands.inspect() instead.
-     */
-    public static InspectContainerNetworkRes inspectNetwork(Container container) {
-        return new InspectNetworkCmd().withContainer(container)
-                .exec();
-    }
-
     public static InspectContainerRes inspect(Container container) {
         return new InspectCmd().withContainer(container)
                 .withDockerClient(dockerClient)
