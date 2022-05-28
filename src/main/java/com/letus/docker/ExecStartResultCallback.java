@@ -3,15 +3,16 @@ package com.letus.docker;
 import com.github.dockerjava.api.async.ResultCallbackTemplate;
 import com.github.dockerjava.api.model.Frame;
 import com.letus.user.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.websocket.Session;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
 public class ExecStartResultCallback extends ResultCallbackTemplate<ExecStartResultCallback, Frame> {
-    private Session session;
-    private User user;
+    private final User user;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExecStartResultCallback.class);
 
     public ExecStartResultCallback(User user) {
         this.user = user;
@@ -19,7 +20,7 @@ public class ExecStartResultCallback extends ResultCallbackTemplate<ExecStartRes
 
     @Override
     public void onNext(Frame item) {
-        session = user.getClientSession();
+        Session session = user.getClientSession();
         if (item != null) {
             try {
                 switch (item.getStreamType()) {
@@ -32,13 +33,19 @@ public class ExecStartResultCallback extends ResultCallbackTemplate<ExecStartRes
                         }
                         break;
                     default:
-                        System.out.println("Unknown stream type: " + item.getStreamType());
+                        LOGGER.warn("Unknown stream type: {}", item.getStreamType());
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error(this.getClass().getName() + " raises an exception", e);
             }
         } else {
-            System.out.println("Frame doesn't exist");
+            LOGGER.warn("Frame doesn't exist");
         }
+    }
+
+    @Override
+    public void onComplete() {
+        LOGGER.info("ResultCallback on complete");
+        super.onComplete();
     }
 }
