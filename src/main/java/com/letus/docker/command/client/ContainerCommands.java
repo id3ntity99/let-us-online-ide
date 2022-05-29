@@ -5,14 +5,16 @@ import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
-import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
+import com.github.dockerjava.jaxrs.JerseyDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 import com.letus.docker.command.*;
-import com.letus.docker.command.response.InspectContainerNetworkRes;
 import com.letus.docker.command.response.InspectContainerRes;
 import com.letus.user.User;
 
+@Deprecated
 /**
+ * @deprecated Unnecessarily increasing complexity.
+ *
  * An instance of this class plays the role of both an Invoker(, which is part of Command pattern)
  * and a Facade. Technically, this class is an Invoker as well as a Client because
  * it creates Command objects and triggers exec method of the commands.
@@ -21,18 +23,18 @@ import com.letus.user.User;
  * After that, this class returns corresponding concrete Response objects for later uses.
  */
 public class ContainerCommands {
-
     private static final DockerClientConfig config = new DefaultDockerClientConfig.Builder()
             .withDockerHost("unix:///var/run/docker.sock")
             .build();
-    private static final DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
+    private static final DockerHttpClient httpClient = new JerseyDockerHttpClient.Builder()
             .dockerHost(config.getDockerHost())
             .build();
     private static final DockerClient dockerClient = DockerClientBuilder.getInstance()
             .withDockerHttpClient(httpClient)
             .build();
 
-    private ContainerCommands() {}
+    private ContainerCommands() {
+    }
 
     public static Container create(String image) {
         return new CreateCmd().withImage(image)
