@@ -5,14 +5,13 @@ import com.github.dockerjava.api.command.StartContainerCmd;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Container;
-import com.letus.docker.command.response.StartContainerRes;
 
 import javax.annotation.CheckForNull;
 
 /**
  * This command is responsible for starting a pre-created container.
  */
-public class StartCmd extends AbstractCommand<StartCmd, StartContainerRes> {
+public class StartCmd extends AbstractCommand<StartCmd, Void> {
     @CheckForNull
     private Container container;
 
@@ -44,13 +43,13 @@ public class StartCmd extends AbstractCommand<StartCmd, StartContainerRes> {
      *
      * @return Returns a response object that contains necessary information for later uses.
      */
-    public StartContainerRes exec() {
+    public Void exec() {
         StartContainerCmd cmd = dockerClient.startContainerCmd(container.getId());
         try {
             cmd.exec();
         } catch (NotModifiedException | NotFoundException e) {
             logger.error("Couldn't start container...", e);
         }
-        return new StartContainerRes(container);
+        return null;
     }
 }

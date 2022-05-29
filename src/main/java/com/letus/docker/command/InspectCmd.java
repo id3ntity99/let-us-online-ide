@@ -5,14 +5,13 @@ import com.github.dockerjava.api.command.InspectContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Container;
-import com.letus.docker.command.response.InspectContainerRes;
 
 import javax.annotation.CheckForNull;
 
 /**
  * This command can be used to inspect a container to get some information.
  */
-public class InspectCmd extends AbstractCommand<InspectCmd, InspectContainerRes> {
+public class InspectCmd extends AbstractCommand<InspectCmd, InspectContainerResponse> {
     @CheckForNull
     private Container container;
 
@@ -44,14 +43,14 @@ public class InspectCmd extends AbstractCommand<InspectCmd, InspectContainerRes>
      *
      * @return Returns a response object that contains necessary information for later uses.
      */
-    public InspectContainerRes exec() {
+    public InspectContainerResponse exec() {
         InspectContainerCmd cmd = dockerClient.inspectContainerCmd(container.getId());
         InspectContainerResponse res = null;
         try {
             res = cmd.exec();
         } catch (NotFoundException e) {
-            logger.error("Cannot create exec to a container...", e);
+            logger.error("Cannot inspect a container...", e);
         }
-        return new InspectContainerRes(res);
+        return res;
     }
 }

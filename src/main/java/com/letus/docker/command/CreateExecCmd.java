@@ -4,14 +4,13 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.ExecCreateCmd;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.model.Container;
-import com.letus.docker.command.response.CreateExecContainerRes;
 
 import javax.annotation.CheckForNull;
 
 /**
  * This class is responsible for creating 'docker exec' channel to the specified container.
  */
-public class CreateExecCmd extends AbstractCommand<CreateExecCmd, CreateExecContainerRes> {
+public class CreateExecCmd extends AbstractCommand<CreateExecCmd, String> {
     @CheckForNull
     Container container;
 
@@ -42,10 +41,9 @@ public class CreateExecCmd extends AbstractCommand<CreateExecCmd, CreateExecCont
     /**
      * Invocation of this method will connect to the container for interaction.
      *
-     * @return A Response object that contains necessary information for later uses.
-     * Particularly, CreateExecContainerRes has field execId that is used to start exec.
+     * @return Returns exec id.
      */
-    public CreateExecContainerRes exec() {
+    public String exec() {
         ExecCreateCmd createCmd = dockerClient.execCreateCmd(container.getId());
         ExecCreateCmdResponse res = createCmd.withCmd("/bin/sh")
                 .withTty(true)
@@ -53,6 +51,6 @@ public class CreateExecCmd extends AbstractCommand<CreateExecCmd, CreateExecCont
                 .withUser("root")
                 .withAttachStdout(true)
                 .exec();
-        return new CreateExecContainerRes(res.getId());
+        return res.getId();
     }
 }
