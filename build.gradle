@@ -1,10 +1,11 @@
 plugins {
+    id 'java'
+    id 'war'
     id 'jacoco'
-    id 'application'
 }
 
 jacoco {
-    toolVersion = '0.8.5'
+    toolVersion = '0.8.8'
 }
 
 jacocoTestReport {
@@ -20,33 +21,52 @@ jacocoTestCoverageVerification {
             element = 'METHOD'
             limit {
                 counter = 'BRANCH'
-                value = "COVEREDRATIO"
+                value = 'COVEREDRATIO'
                 minimum = 0.70
             }
         }
     }
 }
 
-group 'org.example'
+group 'com.example'
 version '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
 }
 
+ext {
+    junitVersion = '5.8.2'
+}
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
 dependencies {
-    implementation 'com.jcraft:jsch:0.1.55'
-    testImplementation "org.mockito:mockito-core:4.5.1"
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    implementation 'com.google.api-client:google-api-client:1.34.0'
+    implementation 'org.json:json:20220320'
+    implementation 'com.github.docker-java:docker-java:3.2.13'
+    implementation 'com.github.docker-java:docker-java-transport-httpclient5:3.2.13'
+    implementation 'org.mockito:mockito-core:4.5.1'
+    implementation 'org.mockito:mockito-inline:4.5.1'
+    implementation 'org.slf4j:slf4j-api:1.7.36'
+    implementation 'ch.qos.logback:logback-classic:1.2.11'
+
+    compileOnly('javax.servlet:javax.servlet-api:4.0.1')
+    compileOnly('javax.websocket:javax.websocket-api:1.1')
+
+    testImplementation 'org.mockito:mockito-all:1.10.19'
+    testImplementation 'org.jacoco:org.jacoco.build:0.8.8'
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
 }
 
 test {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
     testLogging.showStandardStreams = true
-}
-
-application {
-    mainClass = "ssh.Main"
 }
