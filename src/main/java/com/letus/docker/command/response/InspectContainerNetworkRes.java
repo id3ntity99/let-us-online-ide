@@ -4,6 +4,7 @@ import com.github.dockerjava.api.model.ContainerNetwork;
 
 import java.util.Map;
 
+@Deprecated
 public class InspectContainerNetworkRes extends Response<Map<String, ContainerNetwork>> {
     public InspectContainerNetworkRes(Map<String, ContainerNetwork> networkMap) {
         super(networkMap);

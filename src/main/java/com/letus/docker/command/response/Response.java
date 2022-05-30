@@ -1,5 +1,6 @@
 package com.letus.docker.command.response;
 
+@Deprecated
 /**
  * This class contains the necessary information about execution of commands.
  * @param <T> Type of the field.
