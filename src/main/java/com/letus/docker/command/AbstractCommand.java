@@ -29,7 +29,7 @@ public abstract class AbstractCommand<COMMAND, EXEC_RESULT> implements Command<C
      * @param containerId A container id to search.
      * @return Returns a container or null if there is no search result.
      */
-    protected Container search(String containerId) {
+    public Container search(String containerId) {
         ListContainersCmd cmd = dockerClient.listContainersCmd();
         Collection<String> containerIdArrayList = new ArrayList<>();
         containerIdArrayList.add(containerId);
