@@ -9,6 +9,7 @@ import javax.annotation.CheckForNull;
 
 /**
  * This class is responsible for creating 'docker exec' channel to the specified container.
+ * CreateExecCmd.exec() must be invoked after a StartCmd.exec().
  */
 public class CreateExecCmd extends AbstractCommand<CreateExecCmd, String> {
     @CheckForNull
