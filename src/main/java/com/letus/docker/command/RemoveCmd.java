@@ -25,13 +25,13 @@ public class RemoveCmd extends AbstractCommand<RemoveCmd, Void> {
     }
 
     @Nullable
-    public Void exec() throws NotFoundException{
+    public Void exec() throws NotFoundException {
         String containerId = container.getId();
         RemoveContainerCmd cmd = dockerClient.removeContainerCmd(containerId);
         try {
             cmd.withRemoveVolumes(true).exec();
         } catch (NotFoundException e) {
-            throw e;
+            throw new NotFoundException(e);
         } catch (ConflictException e) {
             logger.debug(String.format("Stopping container: %s", containerId));
             new StopCmd().withContainer(container)

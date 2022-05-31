@@ -43,13 +43,13 @@ public class InspectCmd extends AbstractCommand<InspectCmd, InspectContainerResp
      *
      * @return Returns a response object that contains necessary information for later uses.
      */
-    public InspectContainerResponse exec() {
+    public InspectContainerResponse exec() throws NotFoundException {
         InspectContainerCmd cmd = dockerClient.inspectContainerCmd(container.getId());
         InspectContainerResponse res = null;
         try {
             res = cmd.exec();
         } catch (NotFoundException e) {
-            logger.error("Cannot inspect a container...", e);
+            throw new NotFoundException(e);
         }
         return res;
     }
