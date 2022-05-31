@@ -7,6 +7,8 @@ import com.letus.user.User;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
+import javax.websocket.Session;
+import java.io.PipedInputStream;
 
 /**
  * This class is used for starting exec channel connected to a container.
@@ -18,7 +20,9 @@ public class StartExecCmd extends AbstractCommand<StartExecCmd, Void> implements
     @CheckForNull
     String execId;
     @CheckForNull
-    User user;
+    PipedInputStream inputStream;
+    @CheckForNull
+    Session session;
 
     /**
      * A method to initialize dockerClient field of the instance.
@@ -47,11 +51,16 @@ public class StartExecCmd extends AbstractCommand<StartExecCmd, Void> implements
      * A method to initialize user field of the instance.
      * User object is required to get i/o streams.
      *
-     * @param user A User object.
-     * @return Returns an object with the initialized user field.
+     * @param inputStream An input stream for a container to read user's input(keystrokes from frontend).
+     * @return Returns an object with the initialized inputStream field.
      */
-    public StartExecCmd withUser(User user) {
-        this.user = user;
+    public StartExecCmd withStdIn(PipedInputStream inputStream) {
+        this.inputStream = inputStream;
+        return this;
+    }
+
+    public StartExecCmd withSession(Session session) {
+        this.session = session;
         return this;
     }
 
@@ -61,10 +70,10 @@ public class StartExecCmd extends AbstractCommand<StartExecCmd, Void> implements
     @Override
     public void run() {
         ExecStartCmd cmd = dockerClient.execStartCmd(execId);
-        ExecStartResultCallback callback = new ExecStartResultCallback(user);
+        ExecStartResultCallback callback = new ExecStartResultCallback(session);
         try {
             cmd.withDetach(false)
-                    .withStdIn(user.getInputStream())
+                    .withStdIn(inputStream)
                     .withTty(true)
                     .exec(callback)
                     .awaitCompletion();
@@ -77,6 +86,7 @@ public class StartExecCmd extends AbstractCommand<StartExecCmd, Void> implements
 
     /**
      * Start a new thread that runs a ExecStartResultCallback.
+     *
      * @return Returns null.
      */
     @Nullable
