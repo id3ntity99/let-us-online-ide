@@ -6,6 +6,7 @@ import javax.websocket.server.ServerEndpointConfig;
 import javax.websocket.server.ServerEndpointConfig.Configurator;
 import java.util.List;
 
+@Deprecated
 public class HandShakeConfigurator extends Configurator {
     @Override
     public void modifyHandshake(ServerEndpointConfig config,
