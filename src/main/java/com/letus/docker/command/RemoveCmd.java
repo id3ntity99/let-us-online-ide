@@ -2,6 +2,7 @@ package com.letus.docker.command;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.RemoveContainerCmd;
+import com.github.dockerjava.api.exception.ConflictException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Container;
 
@@ -24,13 +25,22 @@ public class RemoveCmd extends AbstractCommand<RemoveCmd, Void> {
     }
 
     @Nullable
-    public Void exec() {
+    public Void exec() throws NotFoundException {
         String containerId = container.getId();
         RemoveContainerCmd cmd = dockerClient.removeContainerCmd(containerId);
         try {
             cmd.withRemoveVolumes(true).exec();
         } catch (NotFoundException e) {
-            logger.error("Couldn't remove container...", e);
+            throw new NotFoundException(e);
+        } catch (ConflictException e) {
+            logger.debug(String.format("Stopping container: %s", containerId));
+            new StopCmd().withContainer(container)
+                    .withDockerClient(dockerClient)
+                    .exec();
+            logger.debug(String.format("Stopped container: %s", containerId));
+            logger.debug(String.format("Removing stopped container: %s", containerId));
+            cmd.withRemoveVolumes(true).exec();
+            logger.debug(String.format("Removed container: %s", containerId));
         }
         return null;
     }

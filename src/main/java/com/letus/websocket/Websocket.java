@@ -13,6 +13,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.HashMap;
 
+@Deprecated
 @ServerEndpoint(value = "/init", configurator = HandShakeConfigurator.class)
 public class Websocket {
     private final String ID_TOKEN = "idToken";
@@ -21,25 +22,25 @@ public class Websocket {
 
     @OnOpen
     public void onOpen(Session session) {
+        System.out.println(session.getClass());
         String idToken = (String) session.getUserProperties().get(ID_TOKEN);
         if (!tokenUserHash.containsKey(idToken)) {
             session.setMaxIdleTimeout(1800000);
             try {
                 User.UserBuilder userBuilder = new User.UserBuilder()
                         .withInputStream(new PipedInputStream())
-                        .withOutputStream(new PipedOutputStream())
-                        .withClientSession(session);
+                        .withOutputStream(new PipedOutputStream());
                 Container container = new CreateCmd().withImage("runner-image")
                         .withDockerClient(dockerClient)
                         .exec();
                 new StartCmd().withContainer(container)
                         .withDockerClient(dockerClient)
                         .exec();
-                User user = userBuilder.withContainer(container).build();
+                User user = userBuilder.build();
                 String execId = new CreateExecCmd().withContainer(container)
                         .withDockerClient(dockerClient)
                         .exec();
-                new StartExecCmd().withUser(user)
+                new StartExecCmd().withStdIn(user.getInputStream())
                         .withExecId(execId)
                         .withDockerClient(dockerClient)
                         .exec();
@@ -50,7 +51,6 @@ public class Websocket {
         } else {
             try {
                 User user = tokenUserHash.get(idToken);
-                user.setClientSession(session);
                 Container container = user.getContainer();
                 boolean isRunning = Boolean.TRUE.equals(
                         new InspectCmd().withContainer(container)

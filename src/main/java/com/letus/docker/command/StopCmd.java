@@ -46,12 +46,14 @@ public class StopCmd extends AbstractCommand<StopCmd, Void> {
      * @return Returns null;
      */
     @Nullable
-    public Void exec() {
+    public Void exec() throws NotModifiedException, NotFoundException {
         StopContainerCmd cmd = dockerClient.stopContainerCmd(container.getId());
         try {
             cmd.exec();
-        } catch (NotModifiedException | NotFoundException e) {
-            logger.error("Couldn't stop container...", e);
+        } catch (NotModifiedException e) {
+            throw new NotModifiedException(e.getMessage(), e);
+        } catch (NotFoundException e) {
+            throw new NotFoundException(e.getMessage(), e);
         }
         return null;
     }

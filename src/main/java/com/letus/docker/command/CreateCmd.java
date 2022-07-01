@@ -45,8 +45,8 @@ public class CreateCmd extends AbstractCommand<CreateCmd, Container> {
      *
      * @return Returns the container that just has been created.
      */
-    public Container exec() {
-        String containerId = null;
+    public Container exec() throws ConflictException, NotFoundException {
+        String containerId;
         try (CreateContainerCmd cmd = dockerClient.createContainerCmd(imageName)) {
             try {
                 containerId = cmd.withAttachStdout(true)
@@ -55,8 +55,10 @@ public class CreateCmd extends AbstractCommand<CreateCmd, Container> {
                         .withTty(true)
                         .exec()
                         .getId();
-            } catch (ConflictException | NotFoundException e) {
-                logger.error("Cannot create new docker container...", e);
+            } catch (ConflictException e) {
+                throw new ConflictException(e.getMessage(), e);
+            } catch (NotFoundException e) {
+                throw new NotFoundException(e.getMessage(), e);
             }
             return search(containerId);
         }

@@ -43,12 +43,14 @@ public class StartCmd extends AbstractCommand<StartCmd, Void> {
      *
      * @return Returns a response object that contains necessary information for later uses.
      */
-    public Void exec() {
+    public Void exec() throws NotModifiedException, NotFoundException {
         StartContainerCmd cmd = dockerClient.startContainerCmd(container.getId());
         try {
             cmd.exec();
-        } catch (NotModifiedException | NotFoundException e) {
-            logger.error("Couldn't start container...", e);
+        } catch (NotModifiedException e) {
+            throw new NotModifiedException(e.getMessage(), e);
+        } catch (NotFoundException e) {
+            throw new NotFoundException(e.getMessage(), e);
         }
         return null;
     }
